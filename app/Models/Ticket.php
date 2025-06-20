@@ -20,7 +20,7 @@ class Ticket extends Model
         'user_id',
         'due_date',
         'uuid',
-        'epic_id',
+        // 'epic_id',
     ];
 
     protected $casts = [
@@ -73,10 +73,5 @@ class Ticket extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(TicketComment::class)->orderBy('created_at', 'asc');
-    }
-
-    public function epic(): BelongsTo
-    {
-        return $this->belongsTo(Epic::class);
     }
 }

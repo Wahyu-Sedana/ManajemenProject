@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
-use App\Models\Epic;
 use App\Models\TicketStatus;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -37,14 +36,7 @@ class TicketsRelationManager extends RelationManager
                     ->default($defaultStatusId)
                     ->required()
                     ->searchable(),
-                // Forms\Components\Select::make('epic_id')
-                //     ->label('Epic')
-                //     ->options(function () use ($projectId) {
-                //         return Epic::where('project_id', $projectId)
-                //             ->pluck('name', 'id')
-                //             ->toArray();
-                //     })
-                //     ->nullable(),
+
                 Forms\Components\Select::make('user_id')
                     ->label('Assignee')
                     ->options(function () {

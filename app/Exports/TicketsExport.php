@@ -74,9 +74,6 @@ class TicketsExport implements FromCollection, WithHeadings, WithMapping, WithSt
                 case 'project':
                     $row[] = $ticket->project?->name ?? 'No Project';
                     break;
-                // case 'epic':
-                //     $row[] = $ticket->epic?->name ?? 'No Epic';
-                //     break;
                 case 'due_date':
                     $row[] = $ticket->due_date ? $ticket->due_date->format('Y-m-d') : '';
                     break;

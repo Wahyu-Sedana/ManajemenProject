@@ -41,10 +41,6 @@ class Project extends Model
             ->withTimestamps();
     }
 
-    public function epics(): HasMany
-    {
-        return $this->hasMany(Epic::class);
-    }
 
     public function getRemainingDaysAttribute()
     {
