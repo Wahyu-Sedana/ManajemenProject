@@ -2,7 +2,7 @@
 
 -   PHP > 8.2+
 -   Laravel 12
--   MySQL 8.0+ / PostgreSQL 12+
+-   MySQL 8.0+
 -   Composer
 
 ## Installation
@@ -10,8 +10,8 @@
 1. Clone the repository:
 
     ```
-    git clone https://github.com/SeptiawanAjiP/dewakoding-project-management
-    cd dewakoding-project-management
+    git clone https://github.com/Wahyu-Sedana/ManajemenProject.git
+    cd ManajemenProject
     ```
 
 2. Install dependencies:
