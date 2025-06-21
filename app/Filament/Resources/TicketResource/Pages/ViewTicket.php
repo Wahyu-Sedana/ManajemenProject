@@ -52,9 +52,15 @@ class ViewTicket extends ViewRecord
                 ->action(function (array $data) {
                     $ticket = $this->getRecord();
 
+                    $fixedComment = str_replace(
+                        'http://localhost',
+                        config('app.url'),
+                        $data['comment']
+                    );
+
                     $ticket->comments()->create([
                         'user_id' => auth()->id(),
-                        'comment' => $data['comment'],
+                        'comment' => $fixedComment,
                     ]);
 
                     Notification::make()
@@ -194,9 +200,27 @@ class ViewTicket extends ViewRecord
                     ->icon('heroicon-o-document-text')
                     ->schema([
                         TextEntry::make('description')
-                            ->hiddenLabel()
-                            ->html()
-                            ->columnSpanFull(),
+                        ->hiddenLabel()
+                        ->html()
+                        ->columnSpanFull()
+                        ->formatStateUsing(fn ($state) => '
+                            <style>
+                                .prose img {
+                                    display: block;
+                                    max-width: 100%;
+                                    height: auto;
+                                    width: auto;
+                                    max-height: 400px;
+                                    object-fit: contain;
+                                    image-orientation: from-image;
+                                    margin-left: 0;
+                                    margin-right: auto;
+                                }
+                            </style>
+                            <div class="prose prose-sm max-w-none dark:prose-invert">
+                                '.$state.'
+                            </div>
+                        '),
                     ]),
                 Section::make('Comments')
                     ->icon('heroicon-o-chat-bubble-left-right')
