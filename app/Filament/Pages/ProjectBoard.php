@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use App\Filament\Actions\ExportTicketsAction;
 use App\Exports\TicketsExport;
+use Illuminate\Contracts\Support\Htmlable;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,11 +22,21 @@ class ProjectBoard extends Page
 
     protected static string $view = 'filament.pages.project-board';
 
-    protected static ?string $title = 'Project Board';
+    public function getTitle(): string
+    {
+        return __('navigation.labels.project_board');
+    }
 
-    protected static ?string $navigationLabel = 'Project Board';
 
-    protected static ?string $navigationGroup = 'Project Visualization';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.project_board');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.project_visualization');
+    }
 
     protected static ?int $navigationSort = 2;
 
@@ -55,7 +66,7 @@ class ProjectBoard extends Page
             $this->loadTicketStatuses();
         } elseif ($this->projects->isNotEmpty() && ! is_null($project_id)) {
             Notification::make()
-                ->title('Project Not Found')
+                ->title(__('board.notifications.project_not_found'))
                 ->danger()
                 ->send();
             $this->redirect(static::getUrl());
@@ -121,7 +132,7 @@ class ProjectBoard extends Page
             $this->dispatch('ticket-updated');
 
             Notification::make()
-                ->title('Ticket Updated')
+                ->title(__('board.notifications.ticket_updated'))
                 ->success()
                 ->send();
         }
@@ -140,7 +151,7 @@ class ProjectBoard extends Page
 
         if (! $ticket) {
             Notification::make()
-                ->title('Ticket Not Found')
+                ->title(__('board.notifications.ticket_not_found'))
                 ->danger()
                 ->send();
 
@@ -163,7 +174,7 @@ class ProjectBoard extends Page
 
         if (! $this->canEditTicket($ticket)) {
             Notification::make()
-                ->title('Permission Denied')
+                ->title(__('board.notifications.permission_denied'))
                 ->body('You do not have permission to edit this ticket.')
                 ->danger()
                 ->send();
@@ -178,7 +189,7 @@ class ProjectBoard extends Page
     {
         return [
             Action::make('new_ticket')
-                ->label('New Ticket')
+                ->label(__('board.actions.new_ticket'))
                 ->icon('heroicon-m-plus')
                 ->visible(fn() => $this->selectedProject !== null && auth()->user()->hasRole(['super_admin']))
                 ->url(fn(): string => TicketResource::getUrl('create', [
@@ -186,8 +197,9 @@ class ProjectBoard extends Page
                     'ticket_status_id' => $this->selectedProject?->ticketStatuses->first()?->id,
                 ])),
 
+
             Action::make('refresh_board')
-                ->label('Refresh Board')
+                ->label(__('board.actions.refresh_board'))
                 ->icon('heroicon-m-arrow-path')
                 ->action('refreshBoard')
                 ->color('warning'),
@@ -232,8 +244,8 @@ class ProjectBoard extends Page
     {
         if (empty($selectedColumns)) {
             Notification::make()
-                ->title('Export Failed')
-                ->body('Please select at least one column to export.')
+                ->title(__('board.notifications.export_failed'))
+                ->body(__('board.notifications.select_columns'))
                 ->danger()
                 ->send();
             return;
@@ -259,8 +271,8 @@ class ProjectBoard extends Page
 
         if ($tickets->isEmpty()) {
             Notification::make()
-                ->title('Export Failed')
-                ->body('No tickets found to export.')
+                ->title(__('board.notifications.export_failed'))
+                ->body(__('board.notifications.no_tickets'))
                 ->warning()
                 ->send();
             return;
@@ -289,14 +301,14 @@ class ProjectBoard extends Page
             ");
 
             Notification::make()
-                ->title('Export Successful')
-                ->body('Your Excel file is being downloaded.')
+                ->title(__('board.notifications.export_success'))
+                ->body(__('board.notifications.download_started'))
                 ->success()
                 ->send();
         } catch (\Exception $e) {
             Notification::make()
-                ->title('Export Failed')
-                ->body('An error occurred while exporting: ' . $e->getMessage())
+                ->title(__('board.notifications.export_failed'))
+                ->body(__('board.notifications.export_error', ['message' => $e->getMessage()]))
                 ->danger()
                 ->send();
         }

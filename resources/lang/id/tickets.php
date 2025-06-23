@@ -1,0 +1,52 @@
+<?php
+
+return [
+    'actions' => [
+        'add_comment' => 'Tambah Komentar',
+        'edit_comment' => 'Edit Komentar',
+        'update' => 'Perbarui',
+        'back_to_board' => 'Kembali ke Papan',
+    ],
+    'notifications' => [
+        'comment_added' => 'Komentar berhasil ditambahkan',
+        'comment_not_found' => 'Komentar tidak ditemukan',
+        'permission_denied' => 'Anda tidak memiliki izin',
+        'comment_deleted' => 'Komentar berhasil dihapus',
+        'comment_updated' => 'Komentar berhasil diperbarui',
+    ],
+    'view' => [
+        'id' => 'ID Tiket',
+        'name' => 'Nama Tiket',
+        'project' => 'Proyek',
+        'status' => 'Status',
+        'assignee' => 'Penanggung Jawab',
+        'due_date' => 'Batas Waktu',
+        'created_at' => 'Dibuat Pada',
+        'updated_at' => 'Diperbarui Pada',
+        'description' => 'Deskripsi',
+        'comments' => 'Komentar',
+        'comments_description' => 'Diskusi terkait tiket ini',
+        'recent_comments' => 'Komentar Terbaru',
+        'history' => 'Riwayat Status',
+        'updated_by' => 'Diperbarui oleh',
+        'system' => 'Sistem',
+    ],
+
+    'id' => 'ID Tiket',
+    'name' => 'Nama Tiket',
+    'status' => 'Status',
+    'assignee' => 'Penanggung Jawab',
+    'due_date' => 'Batas Waktu',
+    'description' => 'Deskripsi',
+    'created_at' => 'Dibuat Pada',
+    'project' => 'Proyek',
+    'helper_assignee' => 'Biarkan kosong jika belum ditugaskan',
+
+    'actions' => [
+        'create' => 'Buat Tiket',
+        'edit' => 'Ubah',
+        'delete' => 'Hapus',
+        'delete_selected' => 'Hapus yang Dipilih',
+        'update_status' => 'Perbarui Status',
+    ],
+];

@@ -19,21 +19,28 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationLabel = 'Users';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.users');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label(__('user.fields.name'))
                     ->required()
                     ->maxLength(255),
+
                 Forms\Components\TextInput::make('email')
+                    ->label(__('user.fields.email'))
                     ->email()
                     ->required()
                     ->maxLength(255),
-                // Forms\Components\DateTimePicker::make('email_verified_at'),
+
                 Forms\Components\TextInput::make('password')
+                    ->label(__('user.fields.password'))
                     ->password()
                     ->dehydrateStateUsing(
                         fn($state) => ! empty($state) ? Hash::make($state) : null
@@ -41,78 +48,78 @@ class UserResource extends Resource
                     ->dehydrated(fn($state) => ! empty($state))
                     ->required(fn(string $operation): bool => $operation === 'create')
                     ->maxLength(255),
+
                 Forms\Components\Select::make('roles')
+                    ->label(__('user.fields.roles'))
                     ->relationship('roles', 'name')
                     ->preload()
                     ->searchable(),
             ]);
     }
 
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('user.fields.name'))
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('email')
+                    ->label(__('user.fields.email'))
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('roles.name')
-                    ->label('Roles')
-                    ->tooltip(fn(User $record): string => $record->roles->pluck('name')->join(', ') ?: 'No Roles')
+                    ->label(__('user.fields.roles'))
+                    ->tooltip(fn(User $record): string => $record->roles->pluck('name')->join(', ') ?: __('user.empty.roles'))
                     ->sortable(),
 
-                // Jumlah project yang user terlibat sebagai member
                 Tables\Columns\TextColumn::make('projects_count')
-                    ->label('Projects')
+                    ->label(__('user.fields.projects'))
                     ->counts('projects')
-                    ->tooltip(fn(User $record): string => $record->projects->pluck('name')->join(', ') ?: 'No Projects')
+                    ->tooltip(fn(User $record): string => $record->projects->pluck('name')->join(', ') ?: __('user.empty.projects'))
                     ->sortable(),
 
-                // Jumlah ticket yang di-assign ke user
                 Tables\Columns\TextColumn::make('tickets_count')
-                    ->label('Tickets')
+                    ->label(__('user.fields.tickets'))
                     ->counts('tickets')
-                    ->tooltip('Number of tickets assigned to this user')
+                    ->tooltip(__('user.tooltips.tickets'))
                     ->sortable(),
-
-                // Tables\Columns\TextColumn::make('email_verified_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('user.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('user.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\Filter::make('has_projects')
-                    ->label('Has Projects')
+                    ->label(__('user.filters.has_projects'))
                     ->query(fn(Builder $query): Builder => $query->whereHas('projects')),
 
                 Tables\Filters\Filter::make('has_tickets')
-                    ->label('Has Tickets')
+                    ->label(__('user.filters.has_tickets'))
                     ->query(fn(Builder $query): Builder => $query->whereHas('tickets')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-
+                Tables\Actions\EditAction::make()->label(__('user.actions.edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label(__('user.actions.delete')),
                 ]),
             ]);
     }
+
 
     public static function getRelations(): array
     {

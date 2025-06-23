@@ -10,17 +10,17 @@
             width: 2px;
             background-color: #94a3b8;
         }
-        
+
         .timeline-history .timeline-item {
             position: relative;
             padding-left: 25px;
             padding-bottom: 1.25rem;
         }
-        
+
         .timeline-history .timeline-item:last-child {
             padding-bottom: 0;
         }
-        
+
         .timeline-history .timeline-dot {
             position: absolute;
             left: -9px;
@@ -33,28 +33,37 @@
     </style>
 
     @php
-        $histories = $getRecord()->histories()->with(['user', 'status'])->orderBy('created_at', 'desc')->get();
+        $histories = $getRecord()
+            ->histories()
+            ->with(['user', 'status'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     @endphp
-    
+
     <div class="relative">
         {{-- Vertical line --}}
         <div class="vertical-line"></div>
-        
+
         {{-- Timeline items --}}
         <div class="space-y-5">
-            @foreach($histories as $history)
+            @foreach ($histories as $history)
                 <div class="timeline-item">
                     {{-- Dot marker --}}
                     <div class="timeline-dot"></div>
-                    
+
                     {{-- Content --}}
                     <div>
                         <div>
-                            <span class="text-base font-medium text-gray-900">{{ $history->status->name }}</span>
+                            <span class="text-base font-medium text-gray-900">
+                                {{ $history->status->name }}
+                            </span>
                         </div>
-                        
+
                         <div class="text-xs text-gray-400 mt-1 flex items-center gap-x-1">
-                            <span>Updated by: {{ $history->user->name ?? 'System' }}</span>
+                            <span>
+                                {{ __('tickets.view.updated_by') }}:
+                                {{ $history->user->name ?? __('tickets.view.system') }}
+                            </span>
                             <span class="text-gray-300 mx-1">•</span>
                             <span>{{ $history->created_at->format('d M H:i') }}</span>
                         </div>

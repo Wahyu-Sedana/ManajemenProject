@@ -23,53 +23,58 @@ class ProjectResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label(__('project.fields.name'))
                     ->required()
                     ->maxLength(255),
                 Forms\Components\Textarea::make('description')
+                    ->label(__('project.fields.description'))
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('ticket_prefix')
+                    ->label(__('project.fields.ticket_prefix'))
                     ->required()
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('start_date')
-                    ->label('Start Date')
+                    ->label(__('project.fields.start_date'))
                     ->native(false)
                     ->displayFormat('d/m/Y'),
                 Forms\Components\DatePicker::make('end_date')
-                    ->label('End Date')
+                    ->label(__('project.fields.end_date'))
                     ->native(false)
                     ->displayFormat('d/m/Y')
                     ->afterOrEqual('start_date'),
                 Forms\Components\Toggle::make('create_default_statuses')
-                    ->label('Use Default Ticket Statuses')
-                    ->helperText('Create standard Backlog, To Do, In Progress, Review, and Done statuses automatically')
+                    ->label(__('project.fields.create_default_statuses'))
+                    ->helperText(__('project.fields.create_default_statuses_helper'))
                     ->default(true)
                     ->dehydrated(false)
                     ->visible(fn($livewire) => $livewire instanceof Pages\CreateProject),
             ]);
     }
 
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('project.fields.name'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('ticket_prefix')
+                    ->label(__('project.fields.ticket_prefix'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('start_date')
+                    ->label(__('project.fields.start_date'))
                     ->date('d/m/Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
+                    ->label(__('project.fields.end_date'))
                     ->date('d/m/Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('remaining_days')
-                    ->label('Remaining Days')
+                    ->label(__('project.fields.remaining_days'))
                     ->getStateUsing(function (Project $record): ?string {
-                        if (!$record->end_date) {
-                            return null;
-                        }
-
-                        return $record->remaining_days . ' days';
+                        if (!$record->end_date) return null;
+                        return $record->remaining_days . ' ' . __('project.days');
                     })
                     ->badge()
                     ->color(
@@ -78,31 +83,31 @@ class ProjectResource extends Resource
                     ),
                 Tables\Columns\TextColumn::make('members_count')
                     ->counts('members')
-                    ->label('Members'),
+                    ->label(__('project.fields.members')),
                 Tables\Columns\TextColumn::make('tickets_count')
                     ->counts('tickets')
-                    ->label('Tickets'),
+                    ->label(__('project.fields.tickets')),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('project.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('project.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                // No toggle filter here
-            ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label(__('project.actions.edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label(__('project.actions.delete')),
                 ]),
             ]);
     }
+
 
     public static function getRelations(): array
     {

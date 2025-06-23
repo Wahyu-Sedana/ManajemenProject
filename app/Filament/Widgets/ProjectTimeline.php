@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\Auth;
 class ProjectTimeline extends Widget
 {
     protected static string $view = 'filament.widgets.project-timeline';
-    
+
     protected int | string | array $columnSpan = 'full';
 
     static ?int $sort = 2;
-    
+
     public function getProjects()
     {
         $query = Project::query()
             ->whereNotNull('start_date')
             ->whereNotNull('end_date')
             ->orderBy('name');
-            
+
         $userIsSuperAdmin = auth()->user() && (
             (method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('super_admin'))
             || (isset(auth()->user()->role) && auth()->user()->role === 'super_admin')
@@ -32,34 +32,34 @@ class ProjectTimeline extends Widget
                 $query->where('user_id', auth()->id());
             });
         }
-            
+
         return $query->get();
     }
-    
+
     protected function getViewData(): array
     {
         $projects = $this->getProjects();
         $today = Carbon::today();
-        
+
         $timelineData = [];
-        
+
         foreach ($projects as $project) {
             if (!$project->start_date || !$project->end_date) {
                 continue;
             }
-            
+
             $startDate = Carbon::parse($project->start_date);
             $endDate = Carbon::parse($project->end_date);
             $totalDays = $startDate->diffInDays($endDate) + 1;
-            
+
             if ($endDate->lt($startDate)) {
                 continue;
             }
-            
+
             $pastDays = 0;
             $remainingDays = 0;
             $progressPercent = 0;
-            
+
             if ($today->lt($startDate)) {
                 $pastDays = 0;
                 $remainingDays = $totalDays;
@@ -73,10 +73,10 @@ class ProjectTimeline extends Widget
                 $remainingDays = $today->diffInDays($endDate);
                 $progressPercent = ($pastDays / $totalDays) * 100;
             }
-            
+
             $status = 'In Progress';
             $statusColor = 'text-blue-600';
-            
+
             if ($today->gt($endDate)) {
                 $status = 'Completed';
                 $statusColor = 'text-green-600';
@@ -90,7 +90,7 @@ class ProjectTimeline extends Widget
                 $status = 'Not Started';
                 $statusColor = 'text-gray-600';
             }
-            
+
             $timelineData[] = [
                 'id' => $project->id,
                 'name' => $project->name,
@@ -104,18 +104,18 @@ class ProjectTimeline extends Widget
                 'status_color' => $statusColor,
             ];
         }
-        
-        usort($timelineData, function($a, $b) {
+
+        usort($timelineData, function ($a, $b) {
             if ($a['remaining_days'] <= 0 && $b['remaining_days'] > 0) {
                 return -1;
             }
             if ($a['remaining_days'] > 0 && $b['remaining_days'] <= 0) {
                 return 1;
             }
-            
+
             return $a['remaining_days'] <=> $b['remaining_days'];
         });
-        
+
         return [
             'projects' => $timelineData
         ];

@@ -18,61 +18,47 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        // Total Projects
         $totalProjects = Project::count();
-
-        // Total Tickets
         $totalTickets = Ticket::count();
-
-        // Tickets created in the last 7 days
         $newTicketsLastWeek = Ticket::where('created_at', '>=', Carbon::now()->subDays(7))->count();
-
-        // Users count
         $usersCount = User::count();
-
-        // Tickets without assignee
         $unassignedTickets = Ticket::whereNull('user_id')->count();
-
-        // Overdue and unfinished tickets
         $projectsWithOverdueTickets = Project::whereHas('tickets', function ($query) {
             $query->whereHas('status', function ($statusQuery) {
                 $statusQuery->where('name', '!=', 'done');
             })->whereDate('due_date', '<', Carbon::today());
         })->count();
 
-
-
         return [
-            Stat::make('Total Projects', $totalProjects)
-                ->description('Active projects in the system')
+            Stat::make(__('dashboard.stats.total_projects.title'), $totalProjects)
+                ->description(__('dashboard.stats.total_projects.description'))
                 ->descriptionIcon('heroicon-m-rectangle-stack')
                 ->color('primary'),
 
-            Stat::make('Total Tickets', $totalTickets)
-                ->description('Tickets across all projects')
+            Stat::make(__('dashboard.stats.total_tickets.title'), $totalTickets)
+                ->description(__('dashboard.stats.total_tickets.description'))
                 ->descriptionIcon('heroicon-m-ticket')
                 ->color('success'),
 
-            Stat::make('New Tickets This Week', $newTicketsLastWeek)
-                ->description('Created in the last 7 days')
+            Stat::make(__('dashboard.stats.new_tickets_week.title'), $newTicketsLastWeek)
+                ->description(__('dashboard.stats.new_tickets_week.description'))
                 ->descriptionIcon('heroicon-m-plus-circle')
                 ->color('info'),
 
-            Stat::make('Unassigned Tickets', $unassignedTickets)
-                ->description('Tickets without an assignee')
+            Stat::make(__('dashboard.stats.unassigned_tickets.title'), $unassignedTickets)
+                ->description(__('dashboard.stats.unassigned_tickets.description'))
                 ->descriptionIcon('heroicon-m-user-minus')
                 ->color($unassignedTickets > 0 ? 'danger' : 'success'),
 
-            Stat::make('Team Members', $usersCount)
-                ->description('Registered users')
+            Stat::make(__('dashboard.stats.team_members.title'), $usersCount)
+                ->description(__('dashboard.stats.team_members.description'))
                 ->descriptionIcon('heroicon-m-users')
                 ->color('gray'),
 
-            Stat::make('Projects with Overdue Tickets', $projectsWithOverdueTickets)
-                ->description('Project with overdue tickets')
+            Stat::make(__('dashboard.stats.projects_with_overdue.title'), $projectsWithOverdueTickets)
+                ->description(__('dashboard.stats.projects_with_overdue.description'))
                 ->descriptionIcon('heroicon-m-clock')
                 ->color($projectsWithOverdueTickets > 0 ? 'danger' : 'success'),
-
         ];
     }
 }

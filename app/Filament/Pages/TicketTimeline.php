@@ -7,21 +7,20 @@ use App\Models\Ticket;
 use Auth;
 use Carbon\Carbon;
 use Filament\Pages\Page;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Collection;
 
 class TicketTimeline extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
-    protected static ?string $navigationLabel = 'Timeline';
-
-    protected static ?string $title = 'Ticket Timeline';
+    protected static ?string $navigationLabel = null;
 
     protected static ?int $navigationSort = 2;
 
-    protected static string $view = 'filament.pages.ticket-timeline';
+    protected static ?string $slug = 'ticket-timeline/{project_id?}';
 
-    protected static ?string $navigationGroup = 'Project Visualization';
+    protected static string $view = 'filament.pages.ticket-timeline';
 
     public ?string $projectId = null;
 
@@ -29,26 +28,38 @@ class TicketTimeline extends Page
 
     public ?Project $selectedProject = null;
 
-    protected static ?string $slug = 'ticket-timeline/{project_id?}';
+    public static function getNavigationLabel(): string
+    {
+        return __('navigation.labels.timeline');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('navigation.groups.project_visualization');
+    }
+
+    public function getTitle(): string
+    {
+        return __('project.title.ticket_timeline');
+    }
 
     public function mount($project_id = null): void
     {
         $user = Auth::user();
 
-        if ($user->hasRole('super_admin')) {
-            $this->projects = Project::all();
-        } else {
-            $this->projects = $user->projects;
-        }
+        $this->projects = $user->hasRole('super_admin')
+            ? Project::all()
+            : $user->projects;
 
         if ($project_id && $this->projects->contains('id', $project_id)) {
             $this->projectId = $project_id;
             $this->selectedProject = Project::find($project_id);
         } elseif ($this->projects->isNotEmpty() && ! is_null($project_id)) {
             Notification::make()
-                ->title('Project Not Found')
+                ->title(__('project.notifications.project_not_found'))
                 ->danger()
                 ->send();
+
             $this->redirect(static::getUrl());
         }
     }
@@ -85,34 +96,14 @@ class TicketTimeline extends Page
             ->whereNotNull('due_date')
             ->orderBy('due_date');
 
-        if ($this->projectId) {
-            $query->where('project_id', $this->projectId);
-        } else {
-            $projectIds = $this->projects->pluck('id')->toArray();
-            $query->whereIn('project_id', $projectIds);
-        }
+        $query->where('project_id', $this->projectId);
 
         return $query->get();
     }
 
     public function getMonthHeaders(): array
     {
-        if (!$this->selectedProject) {
-            return [];
-        }
-
         $tickets = $this->tickets;
-
-        if ($tickets->isEmpty()) {
-            $months = [];
-            $current = Carbon::now()->subMonths(3)->startOfMonth();
-            for ($i = 0; $i < 6; $i++) {
-                $months[] = $current->format('M Y');
-                $current->addMonth();
-            }
-
-            return $months;
-        }
 
         $earliestDate = null;
         $latestDate = null;
@@ -122,27 +113,19 @@ class TicketTimeline extends Page
                 $createdAt = $ticket->created_at ?? Carbon::parse($ticket->due_date)->subDays(14);
                 $dueDate = Carbon::parse($ticket->due_date);
 
-                if ($earliestDate === null || $createdAt < $earliestDate) {
-                    $earliestDate = $createdAt;
-                }
-
-                if ($latestDate === null || $dueDate > $latestDate) {
-                    $latestDate = $dueDate;
-                }
+                $earliestDate = $earliestDate ? min($earliestDate, $createdAt) : $createdAt;
+                $latestDate = $latestDate ? max($latestDate, $dueDate) : $dueDate;
             }
         }
 
-        if ($earliestDate === null || $latestDate === null) {
-            return ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025'];
+        if (!$earliestDate || !$latestDate) {
+            $current = Carbon::now()->subMonths(3)->startOfMonth();
+            return collect(range(0, 5))->map(fn($i) => $current->copy()->addMonths($i)->format('M Y'))->toArray();
         }
 
-        $earliestDate = $earliestDate->startOfMonth();
-        $latestDate = $latestDate->endOfMonth();
-
         $months = [];
-        $current = clone $earliestDate;
-
-        while ($current <= $latestDate) {
+        $current = $earliestDate->copy()->startOfMonth();
+        while ($current <= $latestDate->copy()->endOfMonth()) {
             $months[] = $current->format('M Y');
             $current->addMonth();
         }
@@ -152,18 +135,9 @@ class TicketTimeline extends Page
 
     public function getTimelineData(): array
     {
-        if (!$this->selectedProject) {
-            return [
-                'tasks' => [],
-            ];
-        }
-
         $tickets = $this->tickets;
-
         if ($tickets->isEmpty()) {
-            return [
-                'tasks' => [],
-            ];
+            return ['tasks' => []];
         }
 
         $monthHeaders = $this->getMonthHeaders();
@@ -173,59 +147,37 @@ class TicketTimeline extends Page
         $now = Carbon::now();
 
         foreach ($tickets as $index => $ticket) {
-            if (! $ticket->due_date) {
-                continue;
-            }
-
-            $startDate = $ticket->created_at ? Carbon::parse($ticket->created_at) : Carbon::parse($ticket->due_date)->subDays(14);
+            $startDate = $ticket->created_at ?: Carbon::parse($ticket->due_date)->subDays(14);
             $endDate = Carbon::parse($ticket->due_date);
 
             $hue = ($index * 137) % 360;
             $color = "hsl({$hue}, 70%, 50%)";
-
             $remainingDays = $now->diffInDays($endDate, false);
 
             $barSpans = [];
-
             foreach ($monthRanges as $monthIndex => $monthRange) {
-                $monthStart = $monthRange['start'];
-                $monthEnd = $monthRange['end'];
-                $daysInMonth = $monthStart->daysInMonth;
+                if ($startDate <= $monthRange['end'] && $endDate >= $monthRange['start']) {
+                    $daysInMonth = $monthRange['start']->daysInMonth;
 
-                if ($startDate <= $monthEnd && $endDate >= $monthStart) {
-                    $startPosition = 0;
-                    if ($startDate > $monthStart) {
-                        $daysFromMonthStart = $monthStart->diffInDays($startDate);
-                        $startPosition = ($daysFromMonthStart / $daysInMonth) * 100;
-                    }
-
-                    $endPosition = 100;
-                    if ($endDate < $monthEnd) {
-                        $daysFromMonthStart = $monthStart->diffInDays($endDate);
-                        $endPosition = (($daysFromMonthStart + 1) / $daysInMonth) * 100;
-                    }
-
-                    $widthPercentage = $endPosition - $startPosition;
+                    $startPosition = max(0, ($monthRange['start']->diffInDays($startDate, false)) / $daysInMonth * 100);
+                    $endPosition = min(100, (($monthRange['start']->diffInDays($endDate, false) + 1) / $daysInMonth * 100));
 
                     $barSpans[$monthIndex] = [
                         'start_position' => $startPosition,
-                        'width_percentage' => $widthPercentage,
+                        'width_percentage' => $endPosition - $startPosition,
                     ];
                 }
             }
 
             $status = strtolower($ticket->status->name ?? 'default');
             $statusLabel = ucfirst($status);
-            $isOverdue = $endDate < $now && ! in_array($status, ['completed', 'done', 'closed', 'resolved']);
+            $isOverdue = $endDate < $now && !in_array($status, ['completed', 'done', 'closed', 'resolved']);
 
-            $remainingDaysText = '';
-            if ($remainingDays > 0) {
-                $remainingDaysText = "{$remainingDays} days left";
-            } elseif ($remainingDays === 0) {
-                $remainingDaysText = 'Due today';
-            } else {
-                $remainingDaysText = abs($remainingDays) . ' days overdue';
-            }
+            $remainingDaysText = match (true) {
+                $remainingDays > 0 => __('project.remaining_days', ['count' => $remainingDays]),
+                $remainingDays === 0 => __('project.due_today'),
+                default => __('project.overdue_days', ['count' => abs($remainingDays)])
+            };
 
             $tasks[] = [
                 'id' => $ticket->id,
@@ -243,34 +195,16 @@ class TicketTimeline extends Page
             ];
         }
 
-        usort($tasks, function ($a, $b) {
-            if ($a['is_overdue'] && ! $b['is_overdue']) {
-                return -1;
-            }
-            if (! $a['is_overdue'] && $b['is_overdue']) {
-                return 1;
-            }
+        usort($tasks, fn($a, $b) => ($a['is_overdue'] <=> $b['is_overdue']) ?: $a['remaining_days'] <=> $b['remaining_days']);
 
-            return $a['remaining_days'] <=> $b['remaining_days'];
-        });
-
-        return [
-            'tasks' => $tasks,
-        ];
+        return ['tasks' => $tasks];
     }
 
     private function getMonthDateRanges(array $monthHeaders): array
     {
-        $ranges = [];
-
-        foreach ($monthHeaders as $index => $monthHeader) {
-            $date = Carbon::createFromFormat('M Y', $monthHeader);
-            $ranges[$index] = [
-                'start' => (clone $date)->startOfMonth(),
-                'end' => (clone $date)->endOfMonth(),
-            ];
-        }
-
-        return $ranges;
+        return collect($monthHeaders)->mapWithKeys(function ($header, $index) {
+            $date = Carbon::createFromFormat('M Y', $header);
+            return [$index => ['start' => $date->copy()->startOfMonth(), 'end' => $date->copy()->endOfMonth()]];
+        })->toArray();
     }
 }

@@ -10,13 +10,12 @@ use Filament\Tables\Table;
 class MembersRelationManager extends RelationManager
 {
     protected static string $relationship = 'members';
+    protected static ?string $title = 'Anggota';
 
     public function form(Form $form): Form
     {
         return $form
-            ->schema([
-
-            ]);
+            ->schema([]);
     }
 
     public function table(Table $table): Table
@@ -25,11 +24,13 @@ class MembersRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('project.members.name'))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label(__('project.members.email'))
                     ->searchable()
-                    ->sortable()
+                    ->sortable(),
             ])
             ->filters([
                 //
@@ -38,16 +39,16 @@ class MembersRelationManager extends RelationManager
                 Tables\Actions\AttachAction::make()
                     ->preloadRecordSelect()
                     ->recordSelectSearchColumns(['name', 'email'])
-                    ->label('Add Member'),
+                    ->label(__('project.members.actions.add')),
             ])
             ->actions([
                 Tables\Actions\DetachAction::make()
-                    ->label('Remove'),
+                    ->label(__('project.members.actions.remove')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DetachBulkAction::make()
-                        ->label('Remove Selected'),
+                        ->label(__('project.members.actions.remove_selected')),
                 ]),
             ]);
     }

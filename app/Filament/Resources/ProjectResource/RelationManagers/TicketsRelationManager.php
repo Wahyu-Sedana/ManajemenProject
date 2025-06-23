@@ -12,46 +12,45 @@ use Filament\Tables\Table;
 class TicketsRelationManager extends RelationManager
 {
     protected static string $relationship = 'tickets';
+    protected static ?string $title = 'Tiket';
+
 
     public function form(Form $form): Form
     {
         $projectId = $this->getOwnerRecord()->id;
-
         $defaultStatus = TicketStatus::where('project_id', $projectId)->first();
-        $defaultStatusId = $defaultStatus ? $defaultStatus->id : null;
+        $defaultStatusId = $defaultStatus?->id;
 
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label(__('tickets.name'))
                     ->required()
-                    ->maxLength(255)
-                    ->label('Ticket Name'),
+                    ->maxLength(255),
+
                 Forms\Components\Select::make('ticket_status_id')
-                    ->label('Status')
+                    ->label(__('tickets.status'))
                     ->options(function () use ($projectId) {
-                        return TicketStatus::where('project_id', $projectId)
-                            ->pluck('name', 'id')
-                            ->toArray();
+                        return TicketStatus::where('project_id', $projectId)->pluck('name', 'id')->toArray();
                     })
                     ->default($defaultStatusId)
                     ->required()
                     ->searchable(),
 
                 Forms\Components\Select::make('user_id')
-                    ->label('Assignee')
-                    ->options(function () {
-                        $projectId = $this->getOwnerRecord()->id;
-
-                        return $this->getOwnerRecord()->members()->pluck('name', 'users.id')->toArray();
-                    })
+                    ->label(__('tickets.assignee'))
+                    ->options(fn() => $this->getOwnerRecord()->members()->pluck('name', 'users.id')->toArray())
                     ->searchable()
                     ->nullable(),
+
                 Forms\Components\DatePicker::make('due_date')
-                    ->label('Due Date')
+                    ->label(__('tickets.due_date'))
                     ->nullable(),
+
                 Forms\Components\RichEditor::make('description')
-                    ->columnSpanFull()
-                    ->nullable(),
+                    ->label(__('tickets.description'))
+                    ->nullable()
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -61,14 +60,18 @@ class TicketsRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('uuid')
-                    ->label('Ticket ID')
+                    ->label(__('tickets.id'))
                     ->searchable()
                     ->sortable()
                     ->copyable(),
+
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('tickets.name'))
                     ->searchable()
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('status.name')
+                    ->label(__('tickets.status'))
                     ->badge()
                     ->color(fn($record) => match ($record->status?->name) {
                         'To Do' => 'warning',
@@ -78,65 +81,58 @@ class TicketsRelationManager extends RelationManager
                         default => 'gray',
                     })
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('assignee.name')
-                    ->label('Assignee')
+                    ->label(__('tickets.assignee'))
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('due_date')
+                    ->label(__('tickets.due_date'))
                     ->date()
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('tickets.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('ticket_status_id')
-                    ->label('Status')
-                    ->options(function () {
-                        $projectId = $this->getOwnerRecord()->id;
+                    ->label(__('tickets.status'))
+                    ->options(fn() => TicketStatus::where('project_id', $this->getOwnerRecord()->id)->pluck('name', 'id')->toArray()),
 
-                        return TicketStatus::where('project_id', $projectId)
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    }),
                 Tables\Filters\SelectFilter::make('user_id')
-                    ->label('Assignee')
-                    ->options(function () {
-                        $projectId = $this->getOwnerRecord()->id;
-
-                        return $this->getOwnerRecord()->members()->pluck('name', 'users.id')->toArray();
-                    }),
+                    ->label(__('tickets.assignee'))
+                    ->options(fn() => $this->getOwnerRecord()->members()->pluck('name', 'users.id')->toArray()),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->label(__('tickets.actions.create')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label(__('tickets.actions.edit')),
+                Tables\Actions\DeleteAction::make()
+                    ->label(__('tickets.actions.delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label(__('tickets.actions.delete_selected')),
+
                     Tables\Actions\BulkAction::make('updateStatus')
-                        ->label('Update Status')
+                        ->label(__('tickets.actions.update_status'))
                         ->icon('heroicon-o-arrow-path')
                         ->form([
                             Forms\Components\Select::make('ticket_status_id')
-                                ->label('Status')
-                                ->options(function (RelationManager $livewire) {
-                                    $projectId = $livewire->getOwnerRecord()->id;
-
-                                    return TicketStatus::where('project_id', $projectId)
-                                        ->pluck('name', 'id')
-                                        ->toArray();
-                                })
+                                ->label(__('tickets.status'))
+                                ->options(fn(RelationManager $livewire) => TicketStatus::where('project_id', $livewire->getOwnerRecord()->id)->pluck('name', 'id')->toArray())
                                 ->required(),
                         ])
                         ->action(function (array $data, $records) {
                             foreach ($records as $record) {
-                                $record->update([
-                                    'ticket_status_id' => $data['ticket_status_id'],
-                                ]);
+                                $record->update(['ticket_status_id' => $data['ticket_status_id']]);
                             }
                         }),
                 ]),

@@ -1,0 +1,51 @@
+<?php
+
+return [
+    'actions' => [
+        'add_comment' => 'Add Comment',
+        'edit_comment' => 'Edit Comment',
+        'update' => 'Update',
+        'back_to_board' => 'Back to Board',
+    ],
+    'notifications' => [
+        'comment_added' => 'Comment added successfully',
+        'comment_not_found' => 'Comment not found',
+        'permission_denied' => 'You do not have permission',
+        'comment_deleted' => 'Comment deleted successfully',
+        'comment_updated' => 'Comment updated successfully',
+    ],
+    'view' => [
+        'id' => 'Ticket ID',
+        'name' => 'Ticket Name',
+        'project' => 'Project',
+        'status' => 'Status',
+        'assignee' => 'Assignee',
+        'due_date' => 'Due Date',
+        'created_at' => 'Created At',
+        'updated_at' => 'Updated At',
+        'description' => 'Description',
+        'comments' => 'Comments',
+        'comments_description' => 'Discussion about this ticket',
+        'recent_comments' => 'Recent Comments',
+        'history' => 'Status History',
+        'updated_by' => 'Updated by',
+        'system' => 'System',
+    ],
+    'id' => 'Ticket ID',
+    'name' => 'Ticket Name',
+    'status' => 'Status',
+    'assignee' => 'Assignee',
+    'due_date' => 'Due Date',
+    'description' => 'Description',
+    'created_at' => 'Created At',
+    'project' => 'Project',
+    'helper_assignee' => 'Leave empty if unassigned',
+
+    'actions' => [
+        'create' => 'Create Ticket',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'delete_selected' => 'Delete Selected',
+        'update_status' => 'Update Status',
+    ],
+];
