@@ -1,12 +1,6 @@
 <?php
 
 return [
-    'actions' => [
-        'add_comment' => 'Tambah Komentar',
-        'edit_comment' => 'Edit Komentar',
-        'update' => 'Perbarui',
-        'back_to_board' => 'Kembali ke Papan',
-    ],
     'notifications' => [
         'comment_added' => 'Komentar berhasil ditambahkan',
         'comment_not_found' => 'Komentar tidak ditemukan',
@@ -48,5 +42,9 @@ return [
         'delete' => 'Hapus',
         'delete_selected' => 'Hapus yang Dipilih',
         'update_status' => 'Perbarui Status',
+        'add_comment' => 'Tambah Komentar',
+        'edit_comment' => 'Edit Komentar',
+        'update' => 'Perbarui',
+        'back_to_board' => 'Kembali ke Papan',
     ],
 ];

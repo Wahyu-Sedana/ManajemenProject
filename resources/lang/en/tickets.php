@@ -1,12 +1,6 @@
 <?php
 
 return [
-    'actions' => [
-        'add_comment' => 'Add Comment',
-        'edit_comment' => 'Edit Comment',
-        'update' => 'Update',
-        'back_to_board' => 'Back to Board',
-    ],
     'notifications' => [
         'comment_added' => 'Comment added successfully',
         'comment_not_found' => 'Comment not found',
@@ -44,6 +38,10 @@ return [
     'actions' => [
         'create' => 'Create Ticket',
         'edit' => 'Edit',
+        'add_comment' => 'Add Comment',
+        'edit_comment' => 'Edit Comment',
+        'update' => 'Update',
+        'back_to_board' => 'Back to Board',
         'delete' => 'Delete',
         'delete_selected' => 'Delete Selected',
         'update_status' => 'Update Status',
