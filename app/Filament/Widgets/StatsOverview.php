@@ -23,11 +23,10 @@ class StatsOverview extends BaseWidget
         $newTicketsLastWeek = Ticket::where('created_at', '>=', Carbon::now()->subDays(7))->count();
         $usersCount = User::count();
         $unassignedTickets = Ticket::whereNull('user_id')->count();
-        $projectsWithOverdueTickets = Project::whereHas('tickets', function ($query) {
-            $query->whereHas('status', function ($statusQuery) {
-                $statusQuery->where('name', '!=', 'done');
-            })->whereDate('due_date', '<', Carbon::today());
-        })->count();
+        $overdueTickets = Ticket::whereHas('status', function ($query) {
+            $query->where('name', '!=', 'done');
+        })->whereDate('due_date', '<', Carbon::today())->count();
+
 
         return [
             Stat::make(__('dashboard.stats.total_projects.title'), $totalProjects)
@@ -55,10 +54,10 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-users')
                 ->color('gray'),
 
-            Stat::make(__('dashboard.stats.projects_with_overdue.title'), $projectsWithOverdueTickets)
+            Stat::make(__('dashboard.stats.projects_with_overdue.title'), $overdueTickets)
                 ->description(__('dashboard.stats.projects_with_overdue.description'))
                 ->descriptionIcon('heroicon-m-clock')
-                ->color($projectsWithOverdueTickets > 0 ? 'danger' : 'success'),
+                ->color($overdueTickets > 0 ? 'danger' : 'success'),
         ];
     }
 }

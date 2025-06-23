@@ -23,8 +23,8 @@ return [
             'description' => 'Pengguna yang terdaftar',
         ],
         'projects_with_overdue' => [
-            'title' => 'Proyek dengan Tiket Terlambat',
-            'description' => 'Proyek yang memiliki tiket lewat tenggat',
+            'title' => 'Tiket Terlambat',
+            'description' => 'Tiket yang telah lewat tenggat',
         ],
     ],
 

@@ -344,10 +344,10 @@
                                 const componentId = document.querySelector(
                                     '[wire\\:id]').getAttribute('wire:id');
                                 if (componentId) {
-                                    Livewire.find(componentId).moveTicket(
-                                        parseInt(ticketId),
-                                        parseInt(statusId)
-                                    );
+                                    Livewire.dispatch('ticket-moved', {
+                                        ticketId: parseInt(ticketId),
+                                        newStatusId: parseInt(statusId)
+                                    });
                                 }
                             }
 
@@ -412,10 +412,10 @@
                                 const componentId = document.querySelector(
                                     '[wire\\:id]').getAttribute('wire:id');
                                 if (componentId) {
-                                    Livewire.find(componentId).moveTicket(
-                                        parseInt(ticketId),
-                                        parseInt(statusId)
-                                    );
+                                    Livewire.dispatch('ticket-moved', {
+                                        ticketId: parseInt(ticketId),
+                                        newStatusId: parseInt(statusId)
+                                    });
                                 }
                             }
                         });
