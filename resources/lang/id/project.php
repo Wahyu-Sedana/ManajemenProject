@@ -3,15 +3,15 @@
 return [
     'title' => [
         'project_board' => 'Papan Proyek',
-        'ticket_timeline' => 'Linimasa Tiket',
+        'ticket_timeline' => 'Timeline Tiket',
     ],
     'select_project' => 'Pilih Proyek',
     'select_project_first' => 'Silakan pilih proyek terlebih dahulu',
-    'select_project_description' => 'Pilih proyek dari dropdown di atas untuk melihat linimasa',
+    'select_project_description' => 'Pilih proyek dari dropdown di atas untuk melihat Timeline',
     'title' => [
-        'ticket_timeline' => 'Linimasa Tiket',
+        'ticket_timeline' => 'Timeline Tiket',
     ],
-    'timeline_description' => 'Menampilkan linimasa dari tiket berdasarkan tanggal mulai hingga tenggat',
+    'timeline_description' => 'Menampilkan Timeline dari tiket berdasarkan tanggal mulai hingga tenggat',
     'due' => 'Jatuh Tempo',
     'fields' => [
         'ticket' => 'Tiket',

@@ -32,7 +32,7 @@ return [
         'projects' => 'Proyek',
         'tickets' => 'Tiket',
         'project_board' => 'Papan Proyek',
-        'timeline' => 'Linimasa',
+        'timeline' => 'Timeline',
         'dashboard' => 'Dasbor',
     ],
 ];

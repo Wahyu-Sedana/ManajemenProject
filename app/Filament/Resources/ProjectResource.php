@@ -42,12 +42,12 @@ class ProjectResource extends Resource
                     ->native(false)
                     ->displayFormat('d/m/Y')
                     ->afterOrEqual('start_date'),
-                Forms\Components\Toggle::make('create_default_statuses')
-                    ->label(__('project.fields.create_default_statuses'))
-                    ->helperText(__('project.fields.create_default_statuses_helper'))
-                    ->default(true)
-                    ->dehydrated(false)
-                    ->visible(fn($livewire) => $livewire instanceof Pages\CreateProject),
+                // Forms\Components\Toggle::make('create_default_statuses')
+                //     ->label(__('project.fields.create_default_statuses'))
+                //     ->helperText(__('project.fields.create_default_statuses_helper'))
+                //     ->default(true)
+                //     ->dehydrated(false)
+                //     ->visible(fn($livewire) => $livewire instanceof Pages\CreateProject),
             ]);
     }
 

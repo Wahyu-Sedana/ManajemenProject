@@ -29,7 +29,7 @@ return [
     ],
 
     'timeline' => [
-        'heading' => 'Linimasa Proyek',
+        'heading' => 'Timeline Proyek',
         'no_projects' => 'Tidak ada proyek tersedia',
         'check_back' => 'Silakan periksa kembali nanti.',
         'days_passed' => ':count hari telah berlalu',
