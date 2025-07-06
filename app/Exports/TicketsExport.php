@@ -63,7 +63,23 @@ class TicketsExport implements FromCollection, WithHeadings, WithMapping, WithSt
                     $row[] = $ticket->name;
                     break;
                 case 'description':
-                    $row[] = strip_tags($ticket->description ?? '');
+                    $description = $ticket->description ?? '';
+                    if (preg_match('/<img[^>]+src="([^">]+)"/i', $description, $matches)) {
+                        $src = $matches[1];
+                    
+                        $row[] = str_starts_with($src, '/')
+                            ? url($src)
+                            : $src;
+                    } elseif (
+                        str_contains($description, '.jpg') ||
+                        str_contains($description, '.png') ||
+                        str_contains($description, '.jpeg') ||
+                        str_contains($description, 'storage/')
+                    ) {
+                        $row[] = url($description); 
+                    } else {
+                        $row[] = \Illuminate\Support\Str::limit(strip_tags($description), 100);
+                    }
                     break;
                 case 'status':
                     $row[] = $ticket->status?->name ?? 'No Status';
