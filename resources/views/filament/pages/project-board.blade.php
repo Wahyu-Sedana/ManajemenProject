@@ -378,8 +378,10 @@
                                 const componentId = document.querySelector(
                                     '[wire\\:id]').getAttribute('wire:id');
                                 if (componentId) {
-                                    Livewire.find(componentId).showTicketDetails(
-                                        ticketId);
+                                    Livewire.dispatch('show-ticket-details', {
+                                        ticketId: parseInt(ticketId)
+                                    });
+
                                 }
                             });
                         }
