@@ -58,8 +58,7 @@ class ProjectsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('project.fields.created_at'))
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
             ])
             ->filters([
                 //

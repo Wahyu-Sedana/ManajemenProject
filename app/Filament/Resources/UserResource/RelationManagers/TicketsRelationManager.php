@@ -68,8 +68,7 @@ class TicketsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('tickets.created_at'))
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('project')
