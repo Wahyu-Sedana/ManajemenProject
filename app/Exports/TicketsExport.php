@@ -64,21 +64,30 @@ class TicketsExport implements FromCollection, WithHeadings, WithMapping, WithSt
                     break;
                 case 'description':
                     $description = $ticket->description ?? '';
+                    $imageUrl = null;
                     if (preg_match('/<img[^>]+src="([^">]+)"/i', $description, $matches)) {
                         $src = $matches[1];
-                    
-                        $row[] = str_starts_with($src, '/')
-                            ? url($src)
-                            : $src;
-                    } elseif (
-                        str_contains($description, '.jpg') ||
-                        str_contains($description, '.png') ||
-                        str_contains($description, '.jpeg') ||
-                        str_contains($description, 'storage/')
-                    ) {
-                        $row[] = url($description); 
+                        $imageUrl = str_starts_with($src, '/') ? url($src) : $src;
+                    }
+
+                    $cleanText = preg_replace('/<img[^>]*>/i', '', $description); 
+                    $textContent = trim(strip_tags($cleanText));
+
+                    $textContent = preg_replace('/Photo on .*?\.(jpg|png|jpeg|gif)\s*\d+(\.\d+)?\s*(KB|MB)/i', '', $textContent);
+
+                    $textContent = preg_replace('/\s+/', ' ', $textContent);
+                    $textContent = trim($textContent);
+
+                    $textContent = \Illuminate\Support\Str::limit($textContent, 100);
+
+                    if ($imageUrl && $textContent) {
+                        $row[] = "{$imageUrl} | {$textContent}";
+                    } elseif ($imageUrl) {
+                        $row[] = $imageUrl;
+                    } elseif ($textContent) {
+                        $row[] = $textContent;
                     } else {
-                        $row[] = \Illuminate\Support\Str::limit(strip_tags($description), 100);
+                        $row[] = '';
                     }
                     break;
                 case 'status':

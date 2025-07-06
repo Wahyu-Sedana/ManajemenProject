@@ -92,14 +92,13 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('user.fields.created_at'))
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
+                    ->sortable(),
+                   
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label(__('user.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                   
             ])
             ->filters([
                 Tables\Filters\Filter::make('has_projects')

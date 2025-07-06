@@ -194,14 +194,13 @@ class TicketResource extends Resource
                 //     ->placeholder('No Epic'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('tickets.table.created_at'))
+                    ->label(__('tickets.view.created_at'))
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('project_id')
-                    ->label(__('tickets.filters.project'))
+                    ->label(__('tickets.view.project'))
                     ->options(function () {
                         if (auth()->user()->hasRole(['super_admin'])) {
                             return Project::pluck('name', 'id')->toArray();
@@ -213,7 +212,7 @@ class TicketResource extends Resource
                     ->preload(),
 
                 Tables\Filters\SelectFilter::make('ticket_status_id')
-                    ->label(__('tickets.filters.status'))
+                    ->label(__('tickets.view.status'))
                     ->options(function () {
                         $projectId = request()->input('tableFilters.project_id');
 
@@ -245,13 +244,13 @@ class TicketResource extends Resource
                 //     ->preload(),
 
                 Tables\Filters\SelectFilter::make('user_id')
-                    ->label(__('tickets.filters.assignee'))
+                    ->label(__('tickets.view.assignee'))
                     ->relationship('assignee', 'name')
                     ->searchable()
                     ->preload(),
 
                 Tables\Filters\Filter::make('due_date')
-                    ->label(__('tickets.filters.due_date'))
+                    ->label(__('tickets.view.due_date'))
                     ->form([
                         Forms\Components\DatePicker::make('due_from'),
                         Forms\Components\DatePicker::make('due_until'),

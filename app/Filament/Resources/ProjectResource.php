@@ -90,13 +90,11 @@ class ProjectResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('project.fields.created_at'))
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label(__('project.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('project.actions.edit')),
