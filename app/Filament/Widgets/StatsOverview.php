@@ -18,15 +18,32 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $totalProjects = Project::count();
-        $totalTickets = Ticket::count();
-        $newTicketsLastWeek = Ticket::where('created_at', '>=', Carbon::now()->subDays(7))->count();
-        $usersCount = User::count();
-        $unassignedTickets = Ticket::whereNull('user_id')->count();
-        $overdueTickets = Ticket::whereHas('status', function ($query) {
+        $user = auth()->user();
+
+        $canViewAll = $user->hasRole('super_admin') || $user->can('view_any_project');
+
+        if ($canViewAll) {
+            $projectsQuery = Project::query();
+            $ticketsQuery = Ticket::query();
+        } else {
+            $projectsQuery = Project::whereHas('members', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+
+            $ticketsQuery = Ticket::whereHas('project.members', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        }
+
+        $totalProjects = $projectsQuery->count();
+        $totalTickets = $ticketsQuery->count();
+        $newTicketsLastWeek = $ticketsQuery->where('created_at', '>=', Carbon::now()->subDays(7))->count();
+        $unassignedTickets = $ticketsQuery->whereNull('user_id')->count();
+        $overdueTickets = $ticketsQuery->whereHas('status', function ($query) {
             $query->where('name', '!=', 'done');
         })->whereDate('due_date', '<', Carbon::today())->count();
 
+        $usersCount = User::count();
 
         return [
             Stat::make(__('dashboard.stats.total_projects.title'), $totalProjects)
@@ -60,4 +77,5 @@ class StatsOverview extends BaseWidget
                 ->color($overdueTickets > 0 ? 'danger' : 'success'),
         ];
     }
+
 }

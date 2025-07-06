@@ -22,16 +22,19 @@ class ProjectTimeline extends Widget
             ->whereNotNull('end_date')
             ->orderBy('name');
 
-        $userIsSuperAdmin = auth()->user() && (
-            (method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('super_admin'))
-            || (isset(auth()->user()->role) && auth()->user()->role === 'super_admin')
+        $user = auth()->user();
+
+        $canViewAll = $user && (
+            $user->hasRole('super_admin') ||
+            $user->can('view_any_project')
         );
 
-        if (!$userIsSuperAdmin) {
-            $query->whereHas('members', function ($query) {
-                $query->where('user_id', auth()->id());
+        if (! $canViewAll) {
+            $query->whereHas('members', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
             });
         }
+
 
         return $query->get();
     }
