@@ -270,37 +270,7 @@ class TicketResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->visible(auth()->user()->hasRole(['super_admin'])),
-                    Tables\Actions\BulkAction::make('updateStatus')
-                        ->label(__('tickets.form.update_status'))
-                        ->icon('heroicon-o-arrow-path')
-                        ->form([
-                            Forms\Components\Select::make('ticket_status_id')
-                                ->label(__('tickets.form.status'))
-                                ->options(function () {
-                                    $firstTicket = Ticket::find(request('records')[0] ?? null);
-                                    if (! $firstTicket) {
-                                        return [];
-                                    }
-
-                                    return TicketStatus::where('project_id', $firstTicket->project_id)
-                                        ->pluck('name', 'id')
-                                        ->toArray();
-                                })
-                                ->required(),
-                        ])
-                        ->action(function (array $data, Collection $records) {
-                            foreach ($records as $record) {
-                                $record->update([
-                                    'ticket_status_id' => $data['ticket_status_id'],
-                                ]);
-                            }
-                        }),
-                ]),
+                Tables\Actions\DeleteAction::make()->label(__('project.actions.delete'))
             ]);
     }
 

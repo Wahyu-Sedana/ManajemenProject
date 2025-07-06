@@ -75,12 +75,6 @@ class ProjectsRelationManager extends RelationManager
 
                 Tables\Actions\DetachAction::make()
                     ->label(__('project.members.actions.remove')),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make()
-                        ->label(__('project.members.actions.remove_selected')),
-                ]),
             ]);
     }
 }

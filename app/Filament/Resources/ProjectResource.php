@@ -98,11 +98,7 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('project.actions.edit')),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label(__('project.actions.delete')),
-                ]),
+                Tables\Actions\DeleteAction::make()->label(__('project.actions.delete'))
             ]);
     }
 

@@ -108,9 +108,6 @@ class TicketsRelationManager extends RelationManager
                 Tables\Actions\ViewAction::make()
                     ->label(__('tickets.actions.edit'))
                     ->url(fn($record) => route('filament.admin.resources.tickets.edit', $record)),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([]),
             ]);
     }
 }

@@ -111,11 +111,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('user.actions.edit')),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label(__('user.actions.delete')),
-                ]),
+                Tables\Actions\DeleteAction::make()->label(__('project.actions.delete'))
             ]);
     }
 

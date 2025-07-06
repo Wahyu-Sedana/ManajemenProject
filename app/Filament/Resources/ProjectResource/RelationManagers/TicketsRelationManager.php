@@ -114,28 +114,7 @@ class TicketsRelationManager extends RelationManager
                     ->label(__('tickets.actions.edit')),
                 Tables\Actions\DeleteAction::make()
                     ->label(__('tickets.actions.delete')),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->label(__('tickets.actions.delete_selected')),
-
-                    Tables\Actions\BulkAction::make('updateStatus')
-                        ->label(__('tickets.actions.update_status'))
-                        ->icon('heroicon-o-arrow-path')
-                        ->form([
-                            Forms\Components\Select::make('ticket_status_id')
-                                ->label(__('tickets.status'))
-                                ->options(fn(RelationManager $livewire) => TicketStatus::where('project_id', $livewire->getOwnerRecord()->id)->pluck('name', 'id')->toArray())
-                                ->required(),
-                        ])
-                        ->action(function (array $data, $records) {
-                            foreach ($records as $record) {
-                                $record->update(['ticket_status_id' => $data['ticket_status_id']]);
-                            }
-                        }),
-                ]),
-            ])
-            ->defaultSort('created_at', 'desc');
+                Tables\Actions\DeleteAction::make()->label(__('project.actions.delete'))
+            ]);
     }
 }
