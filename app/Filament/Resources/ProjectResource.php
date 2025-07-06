@@ -125,18 +125,35 @@ class ProjectResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
+        $user = auth()->user();
 
-        $userIsSuperAdmin = auth()->user() && (
-            (method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('super_admin'))
-            || (isset(auth()->user()->role) && auth()->user()->role === 'super_admin')
-        );
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
 
-        if (! $userIsSuperAdmin) {
-            $query->whereHas('members', function (Builder $query) {
+        if ($user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        if ($user->can('view_any_project')) {
+            return $query;
+        }
+
+        if ($user->can('view_project')) {
+            return $query->whereHas('members', function (Builder $query) {
                 $query->where('user_id', auth()->id());
             });
         }
 
-        return $query;
+        return $query->whereRaw('1 = 0');
+    }
+
+    public static function canViewAny(): bool
+    {
+        $user = auth()->user();
+
+        return $user && (
+            $user->can('view_any_project') || $user->can('view_project')
+        );
     }
 }

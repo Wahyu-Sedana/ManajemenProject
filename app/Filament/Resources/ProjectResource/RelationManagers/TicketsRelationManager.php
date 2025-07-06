@@ -114,7 +114,6 @@ class TicketsRelationManager extends RelationManager
                     ->label(__('tickets.actions.edit')),
                 Tables\Actions\DeleteAction::make()
                     ->label(__('tickets.actions.delete')),
-                Tables\Actions\DeleteAction::make()->label(__('project.actions.delete'))
             ]);
     }
 }

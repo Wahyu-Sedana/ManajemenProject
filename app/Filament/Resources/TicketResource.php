@@ -270,7 +270,7 @@ class TicketResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()->label(__('project.actions.delete'))
+                Tables\Actions\DeleteAction::make()
             ]);
     }
 
