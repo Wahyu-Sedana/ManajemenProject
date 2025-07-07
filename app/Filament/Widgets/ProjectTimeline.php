@@ -3,15 +3,15 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Project;
-use Filament\Widgets\Widget;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Facades\DB;
 
 class ProjectTimeline extends Widget
 {
     protected static string $view = 'filament.widgets.project-timeline';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     static ?int $sort = 2;
 
@@ -35,7 +35,6 @@ class ProjectTimeline extends Widget
             });
         }
 
-
         return $query->get();
     }
 
@@ -43,55 +42,78 @@ class ProjectTimeline extends Widget
     {
         $projects = $this->getProjects();
         $today = Carbon::today();
-
         $timelineData = [];
 
         foreach ($projects as $project) {
-            if (!$project->start_date || !$project->end_date) {
-                continue;
-            }
+            if (!$project->start_date || !$project->end_date) continue;
 
             $startDate = Carbon::parse($project->start_date);
             $endDate = Carbon::parse($project->end_date);
+            if ($endDate->lt($startDate)) continue;
+
             $totalDays = $startDate->diffInDays($endDate) + 1;
 
-            if ($endDate->lt($startDate)) {
-                continue;
-            }
+            $pastDays = $today->lt($startDate) ? 0 : ($today->gt($endDate) ? $totalDays : $startDate->diffInDays($today));
+            $remainingDays = $today->lt($startDate) ? $totalDays : ($today->gt($endDate) ? 0 : $today->diffInDays($endDate));
+            $progressPercent = ($pastDays / $totalDays) * 100;
 
-            $pastDays = 0;
-            $remainingDays = 0;
-            $progressPercent = 0;
+            $hasOverdueTicket = DB::table('tickets')
+                ->join('ticket_statuses', 'tickets.ticket_status_id', '=', 'ticket_statuses.id')
+                ->where('tickets.project_id', $project->id)
+                ->whereRaw("LOWER(TRIM(ticket_statuses.name)) != 'done'")
+                ->whereDate('tickets.due_date', '<', $today->toDateString())
+                ->exists();
 
-            if ($today->lt($startDate)) {
-                $pastDays = 0;
-                $remainingDays = $totalDays;
-                $progressPercent = 0;
-            } elseif ($today->gt($endDate)) {
-                $pastDays = $totalDays;
-                $remainingDays = 0;
-                $progressPercent = 100;
-            } else {
-                $pastDays = $startDate->diffInDays($today);
-                $remainingDays = $today->diffInDays($endDate);
-                $progressPercent = ($pastDays / $totalDays) * 100;
-            }
+           $totalTickets = $project->tickets()->count();
 
+            // Default
             $status = 'In Progress';
-            $statusColor = 'text-blue-600';
+            $statusTextColor = 'text-blue-600';
+            $progressBarColor = '#2563eb'; // blue
 
-            if ($today->gt($endDate)) {
-                $status = 'Completed';
-                $statusColor = 'text-green-600';
-            } elseif ($project->remaining_days <= 0) {
+            if ($totalTickets === 0) {
+                $status = 'Not Started';
+                $statusTextColor = 'text-gray-600';
+                $progressBarColor = '#6b7280'; // gray
+            } elseif ($hasOverdueTicket && $today->gt($endDate)) {
                 $status = 'Overdue';
-                $statusColor = 'text-red-600';
-            } elseif ($project->remaining_days <= 7) {
+                $statusTextColor = 'text-red-600';
+                $progressBarColor = '#dc2626'; // red
+            } elseif ($today->gt($endDate)) {
+                $status = 'Completed';
+                $statusTextColor = 'text-green-600';
+                $progressBarColor = '#16a34a'; // green
+            } elseif ($remainingDays <= 0) {
+                $status = 'Overdue';
+                $statusTextColor = 'text-red-600';
+                $progressBarColor = '#dc2626'; // red
+            } elseif ($remainingDays <= 7) {
                 $status = 'Approaching Deadline';
-                $statusColor = 'text-yellow-600';
+                $statusTextColor = 'text-yellow-600';
+                $progressBarColor = '#eab308'; // yellow
+            }
+
+
+            if ($hasOverdueTicket && $today->gt($endDate)) {
+                $status = 'Overdue';
+                $statusTextColor = 'text-red-600';
+                $progressBarColor = '#dc2626'; // red
+            } elseif ($today->gt($endDate)) {
+                $status = 'Completed';
+                $statusTextColor = 'text-green-600';
+                $progressBarColor = '#16a34a'; // green
+            } elseif ($remainingDays <= 0) {
+                $status = 'Overdue';
+                $statusTextColor = 'text-red-600';
+                $progressBarColor = '#dc2626'; // red
+            } elseif ($remainingDays <= 7) {
+                $status = 'Approaching Deadline';
+                $statusTextColor = 'text-yellow-600';
+                $progressBarColor = '#eab308'; // yellow
             } elseif ($today->lt($startDate)) {
                 $status = 'Not Started';
-                $statusColor = 'text-gray-600';
+                $statusTextColor = 'text-gray-600';
+                $progressBarColor = '#6b7280'; // gray
             }
 
             $timelineData[] = [
@@ -101,26 +123,21 @@ class ProjectTimeline extends Widget
                 'end_date' => $endDate->format('d/m/Y'),
                 'total_days' => $totalDays,
                 'past_days' => $pastDays,
-                'remaining_days' => $project->remaining_days,
+                'remaining_days' => $remainingDays,
                 'progress_percent' => round($progressPercent, 1),
                 'status' => $status,
-                'status_color' => $statusColor,
+                'status_text_color' => $statusTextColor,
+                'progress_bar_color' => $progressBarColor,
             ];
         }
 
+        // Sort overdue first
         usort($timelineData, function ($a, $b) {
-            if ($a['remaining_days'] <= 0 && $b['remaining_days'] > 0) {
-                return -1;
-            }
-            if ($a['remaining_days'] > 0 && $b['remaining_days'] <= 0) {
-                return 1;
-            }
-
+            if ($a['remaining_days'] <= 0 && $b['remaining_days'] > 0) return -1;
+            if ($a['remaining_days'] > 0 && $b['remaining_days'] <= 0) return 1;
             return $a['remaining_days'] <=> $b['remaining_days'];
         });
 
-        return [
-            'projects' => $timelineData
-        ];
+        return ['projects' => $timelineData];
     }
 }

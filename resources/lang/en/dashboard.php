@@ -23,6 +23,10 @@ return [
             'description' => 'Registered users',
         ],
         'projects_with_overdue' => [
+            'title' => 'Overdue Projects',
+            'description' => 'Projects past their end date',
+        ],
+        'tickets_with_overdue' => [
             'title' => 'Overdue Tickets',
             'description' => 'Tickets past their due date',
         ],

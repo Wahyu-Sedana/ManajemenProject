@@ -9,6 +9,7 @@ use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\DB;
 
 class StatsOverview extends BaseWidget
 {
@@ -37,12 +38,42 @@ class StatsOverview extends BaseWidget
 
         $totalProjects = $projectsQuery->count();
         $totalTickets = $ticketsQuery->count();
-        $newTicketsLastWeek = $ticketsQuery->where('created_at', '>=', Carbon::now()->subDays(7))->count();
-        $unassignedTickets = $ticketsQuery->whereNull('user_id')->count();
-        $overdueTickets = $ticketsQuery->whereHas('status', function ($query) {
-            $query->where('name', '!=', 'done');
-        })->whereDate('due_date', '<', Carbon::today())->count();
 
+        $overdueProjects = $projectsQuery
+            ->whereDate('end_date', '<', Carbon::today())
+            ->count();
+
+        $overdueTickets = DB::table('tickets')
+            ->join('ticket_statuses', 'tickets.ticket_status_id', '=', 'ticket_statuses.id')
+            ->whereRaw("LOWER(TRIM(ticket_statuses.name)) != 'done'")
+            ->whereDate('tickets.due_date', '<', Carbon::today()->toDateString())
+            ->count();
+
+        if ($user->hasRole('karyawan')) {
+            return [
+                Stat::make(__('dashboard.stats.total_projects.title'), $totalProjects)
+                    ->description(__('dashboard.stats.total_projects.description'))
+                    ->descriptionIcon('heroicon-m-rectangle-stack')
+                    ->color('primary'),
+
+                Stat::make(__('dashboard.stats.total_tickets.title'), $totalTickets)
+                    ->description(__('dashboard.stats.total_tickets.description'))
+                    ->descriptionIcon('heroicon-m-ticket')
+                    ->color('success'),
+
+                Stat::make(__('dashboard.stats.tickets_with_overdue.title'), $overdueTickets)
+                    ->description(__('dashboard.stats.tickets_with_overdue.description'))
+                    ->descriptionIcon('heroicon-m-clock')
+                    ->color($overdueTickets > 0 ? 'danger' : 'success'),
+
+                Stat::make(__('dashboard.stats.projects_with_overdue.title'), $overdueProjects)
+                    ->description(__('dashboard.stats.projects_with_overdue.description'))
+                    ->descriptionIcon('heroicon-m-exclamation-circle')
+                    ->color($overdueProjects > 0 ? 'danger' : 'success'),
+            ];
+        }
+
+        $unassignedTickets = $ticketsQuery->whereNull('user_id')->count();
         $usersCount = User::count();
 
         return [
@@ -56,10 +87,10 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-ticket')
                 ->color('success'),
 
-            Stat::make(__('dashboard.stats.new_tickets_week.title'), $newTicketsLastWeek)
-                ->description(__('dashboard.stats.new_tickets_week.description'))
-                ->descriptionIcon('heroicon-m-plus-circle')
-                ->color('info'),
+            Stat::make(__('dashboard.stats.projects_with_overdue.title'), $overdueProjects)
+                ->description(__('dashboard.stats.projects_with_overdue.description'))
+                ->descriptionIcon('heroicon-m-exclamation-circle')
+                ->color($overdueProjects > 0 ? 'danger' : 'success'),
 
             Stat::make(__('dashboard.stats.unassigned_tickets.title'), $unassignedTickets)
                 ->description(__('dashboard.stats.unassigned_tickets.description'))
@@ -71,11 +102,10 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-users')
                 ->color('gray'),
 
-            Stat::make(__('dashboard.stats.projects_with_overdue.title'), $overdueTickets)
-                ->description(__('dashboard.stats.projects_with_overdue.description'))
+            Stat::make(__('dashboard.stats.tickets_with_overdue.title'), $overdueTickets)
+                ->description(__('dashboard.stats.tickets_with_overdue.description'))
                 ->descriptionIcon('heroicon-m-clock')
                 ->color($overdueTickets > 0 ? 'danger' : 'success'),
         ];
     }
-
 }

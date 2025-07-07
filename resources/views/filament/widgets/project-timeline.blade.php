@@ -13,6 +13,9 @@
                             <div class="flex justify-between items-start">
                                 <div>
                                     <h3 class="font-bold text-lg">{{ $project['name'] }}</h3>
+                                    <p class="text-sm font-semibold {{ $project['status_text_color'] }}">
+                                        {{ $project['status'] }}
+                                    </p>
                                 </div>
 
                                 <div class="text-right text-sm text-gray-500">
@@ -22,7 +25,7 @@
 
                             <div class="relative w-full h-10 bg-gray-200 rounded-lg overflow-hidden">
                                 <div class="absolute top-0 left-0 h-full"
-                                    style="width: {{ $project['progress_percent'] }}%; background-color: #1d4ed8;">
+                                    style="width: {{ $project['progress_percent'] }}%; background-color: {{ $project['progress_bar_color'] }};">
                                 </div>
 
                                 @if ($project['remaining_days'] > 0)
