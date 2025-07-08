@@ -6,11 +6,20 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class MembersRelationManager extends RelationManager
 {
     protected static string $relationship = 'members';
-    protected static ?string $title = 'Anggota';
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('project.fields.members');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('project.fields.members');
+    }
 
     public function form(Form $form): Form
     {

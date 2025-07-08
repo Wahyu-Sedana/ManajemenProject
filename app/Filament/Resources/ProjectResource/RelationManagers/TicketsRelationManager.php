@@ -8,11 +8,20 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class TicketsRelationManager extends RelationManager
 {
     protected static string $relationship = 'tickets';
-    protected static ?string $title = 'Tiket';
+        public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('project.fields.tickets');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('project.fields.tickets');
+    }
 
 
     public function form(Form $form): Form

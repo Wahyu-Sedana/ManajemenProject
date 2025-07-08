@@ -116,13 +116,13 @@ class UserResource extends Resource
     }
 
 
-    public static function getRelations(): array
-    {
-        return [
-            RelationManagers\ProjectsRelationManager::class,
-            RelationManagers\TicketsRelationManager::class,
-        ];
-    }
+    // public static function getRelations(): array
+    // {
+    //     return [
+    //         RelationManagers\ProjectsRelationManager::class,
+    //         RelationManagers\TicketsRelationManager::class,
+    //     ];
+    // }
 
     public static function getPages(): array
     {

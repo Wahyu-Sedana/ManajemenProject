@@ -228,14 +228,14 @@ class ViewTicket extends ViewRecord
                     ])
                     ->collapsible(),
 
-                Section::make(__('tickets.view.history'))
-                    ->icon('heroicon-o-clock')
-                    ->collapsible()
-                    ->schema([
-                        TextEntry::make('histories')
-                            ->hiddenLabel()
-                            ->view('filament.resources.ticket-resource.timeline-history'),
-                    ]),
+                // Section::make(__('tickets.view.history'))
+                //     ->icon('heroicon-o-clock')
+                //     ->collapsible()
+                //     ->schema([
+                //         TextEntry::make('histories')
+                //             ->hiddenLabel()
+                //             ->view('filament.resources.ticket-resource.timeline-history'),
+                //     ]),
             ]);
     }
 
