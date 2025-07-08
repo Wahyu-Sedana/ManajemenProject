@@ -78,8 +78,9 @@
                         <div
                             class="p-3 flex flex-col gap-3 h-[calc(100vh-22rem)] sm:h-[calc(100vh-20rem)] overflow-y-auto">
                             @foreach ($status->tickets as $ticket)
-                                <div class="ticket-card bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 cursor-move"
-                                    data-ticket-id="{{ $ticket->id }}">
+                                <div class="ticket-card bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 {{ auth()->user()->can('update', $ticket) ? 'cursor-move' : 'cursor-default' }}"
+                                    data-ticket-id="{{ $ticket->id }}"
+                                    data-can-update="{{ auth()->user()->can('update', $ticket) ? 'true' : 'false' }}">
                                     <div class="flex justify-between items-center mb-2">
                                         <span
                                             class="text-xs font-mono text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded truncate max-w-[120px] sm:max-w-none">
@@ -131,6 +132,17 @@
                                             <x-heroicon-m-eye class="w-4 h-4" />
                                         </button>
                                     </div>
+
+                                    {{-- Visual indicator for non-editable tickets --}}
+                                    @if (!auth()->user()->can('update', $ticket))
+                                        <div class="absolute top-2 right-2 opacity-50">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 15v2m0 0v2m0-2h2m-2 0H10m9-6V7a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2z" />
+                                            </svg>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
 
@@ -184,6 +196,11 @@
                         this.isTouchDevice = 'ontouchstart' in window || navigator
                             .maxTouchPoints > 0;
                     });
+                },
+
+                // Check if user can update ticket
+                canUpdateTicket(ticket) {
+                    return ticket.getAttribute('data-can-update') === 'true';
                 },
 
                 setupTouchScrolling() {
@@ -242,134 +259,144 @@
                 attachAllEventListeners() {
                     const tickets = document.querySelectorAll('.ticket-card');
                     tickets.forEach(ticket => {
-                        ticket.setAttribute('draggable', true);
+                        // Only enable dragging if user can update the ticket
+                        if (this.canUpdateTicket(ticket)) {
+                            ticket.setAttribute('draggable', true);
 
-                        ticket.addEventListener('dragstart', (e) => {
-                            this.draggingTicket = ticket.getAttribute('data-ticket-id');
-                            ticket.classList.add('opacity-50');
-                            e.dataTransfer.effectAllowed = 'move';
-                        });
-
-                        ticket.addEventListener('dragend', () => {
-                            ticket.classList.remove('opacity-50');
-                            this.draggingTicket = null;
-                        });
-
-                        // Touch events for mobile drag and drop
-                        let longPressTimer;
-                        let isDragging = false;
-                        let originalColumn;
-
-                        ticket.addEventListener('touchstart', (e) => {
-                            // Only proceed if not already scrolling
-                            if (isDragging) return;
-
-                            longPressTimer = setTimeout(() => {
-                                originalColumn = ticket.closest(
-                                    '.status-column');
+                            ticket.addEventListener('dragstart', (e) => {
                                 this.draggingTicket = ticket.getAttribute(
                                     'data-ticket-id');
-                                ticket.classList.add('opacity-50', 'relative',
-                                    'z-30');
-                                isDragging = true;
+                                ticket.classList.add('opacity-50');
+                                e.dataTransfer.effectAllowed = 'move';
+                            });
 
-                                // Visual feedback
-                                ticket.style.boxShadow =
-                                    '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-                            }, 500); // 500ms long press
-                        }, {
-                            passive: true
-                        });
+                            ticket.addEventListener('dragend', () => {
+                                ticket.classList.remove('opacity-50');
+                                this.draggingTicket = null;
+                            });
 
-                        ticket.addEventListener('touchmove', (e) => {
-                            if (!isDragging) {
-                                // If not dragging, clear the timer to prevent entering drag mode
+                            // Touch events for mobile drag and drop
+                            let longPressTimer;
+                            let isDragging = false;
+                            let originalColumn;
+
+                            ticket.addEventListener('touchstart', (e) => {
+                                // Only proceed if not already scrolling and user can update
+                                if (isDragging || !this.canUpdateTicket(ticket)) return;
+
+                                longPressTimer = setTimeout(() => {
+                                    originalColumn = ticket.closest(
+                                        '.status-column');
+                                    this.draggingTicket = ticket.getAttribute(
+                                        'data-ticket-id');
+                                    ticket.classList.add('opacity-50',
+                                        'relative', 'z-30');
+                                    isDragging = true;
+
+                                    // Visual feedback
+                                    ticket.style.boxShadow =
+                                        '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                                }, 500); // 500ms long press
+                            }, {
+                                passive: true
+                            });
+
+                            ticket.addEventListener('touchmove', (e) => {
+                                if (!isDragging || !this.canUpdateTicket(ticket)) {
+                                    // If not dragging or can't update, clear the timer to prevent entering drag mode
+                                    clearTimeout(longPressTimer);
+                                    return;
+                                }
+
+                                // Move the ticket with touch
+                                const touch = e.touches[0];
+                                const columns = document.querySelectorAll(
+                                    '.status-column');
+
+                                // Find column under touch position
+                                let targetColumn = null;
+                                columns.forEach(column => {
+                                    const rect = column.getBoundingClientRect();
+                                    if (touch.clientX >= rect.left &&
+                                        touch.clientX <= rect.right &&
+                                        touch.clientY >= rect.top &&
+                                        touch.clientY <= rect.bottom) {
+                                        targetColumn = column;
+                                        column.classList.add('bg-primary-50',
+                                            'dark:bg-primary-950');
+                                    } else {
+                                        column.classList.remove('bg-primary-50',
+                                            'dark:bg-primary-950');
+                                    }
+                                });
+                            });
+
+                            ticket.addEventListener('touchend', (e) => {
                                 clearTimeout(longPressTimer);
-                                return;
-                            }
 
-                            // Move the ticket with touch
-                            const touch = e.touches[0];
-                            const columns = document.querySelectorAll('.status-column');
+                                if (!isDragging || !this.canUpdateTicket(ticket))
+                            return;
 
-                            // Find column under touch position
-                            let targetColumn = null;
-                            columns.forEach(column => {
-                                const rect = column.getBoundingClientRect();
-                                if (touch.clientX >= rect.left &&
-                                    touch.clientX <= rect.right &&
-                                    touch.clientY >= rect.top &&
-                                    touch.clientY <= rect.bottom) {
-                                    targetColumn = column;
-                                    column.classList.add('bg-primary-50',
-                                        'dark:bg-primary-950');
-                                } else {
-                                    column.classList.remove('bg-primary-50',
-                                        'dark:bg-primary-950');
-                                }
-                            });
-                        });
+                                isDragging = false;
+                                ticket.classList.remove('opacity-50', 'relative',
+                                    'z-30');
+                                ticket.style.boxShadow = '';
 
-                        ticket.addEventListener('touchend', (e) => {
-                            clearTimeout(longPressTimer);
+                                // Find column under final touch position
+                                const touch = e.changedTouches[0];
+                                const columns = document.querySelectorAll(
+                                    '.status-column');
 
-                            if (!isDragging) return;
-
-                            isDragging = false;
-                            ticket.classList.remove('opacity-50', 'relative', 'z-30');
-                            ticket.style.boxShadow = '';
-
-                            // Find column under final touch position
-                            const touch = e.changedTouches[0];
-                            const columns = document.querySelectorAll('.status-column');
-
-                            let targetColumn = null;
-                            columns.forEach(column => {
-                                const rect = column.getBoundingClientRect();
-                                if (touch.clientX >= rect.left &&
-                                    touch.clientX <= rect.right &&
-                                    touch.clientY >= rect.top &&
-                                    touch.clientY <= rect.bottom) {
-                                    targetColumn = column;
-                                }
-                                column.classList.remove('bg-primary-50',
-                                    'dark:bg-primary-950');
-                            });
-
-                            if (targetColumn && targetColumn !== originalColumn) {
-                                const statusId = targetColumn.getAttribute(
-                                    'data-status-id');
-                                const ticketId = this.draggingTicket;
-
-                                const componentId = document.querySelector(
-                                    '[wire\\:id]').getAttribute('wire:id');
-                                if (componentId) {
-                                    Livewire.dispatch('ticket-moved', {
-                                        ticketId: parseInt(ticketId),
-                                        newStatusId: parseInt(statusId)
-                                    });
-                                }
-                            }
-
-                            this.draggingTicket = null;
-                        });
-
-                        ticket.addEventListener('touchcancel', () => {
-                            clearTimeout(longPressTimer);
-                            if (!isDragging) return;
-
-                            isDragging = false;
-                            ticket.classList.remove('opacity-50', 'relative', 'z-30');
-                            ticket.style.boxShadow = '';
-                            this.draggingTicket = null;
-
-                            document.querySelectorAll('.status-column').forEach(
-                                column => {
+                                let targetColumn = null;
+                                columns.forEach(column => {
+                                    const rect = column.getBoundingClientRect();
+                                    if (touch.clientX >= rect.left &&
+                                        touch.clientX <= rect.right &&
+                                        touch.clientY >= rect.top &&
+                                        touch.clientY <= rect.bottom) {
+                                        targetColumn = column;
+                                    }
                                     column.classList.remove('bg-primary-50',
                                         'dark:bg-primary-950');
                                 });
-                        });
 
+                                if (targetColumn && targetColumn !== originalColumn) {
+                                    const statusId = targetColumn.getAttribute(
+                                        'data-status-id');
+                                    const ticketId = this.draggingTicket;
+
+                                    const componentId = document.querySelector(
+                                        '[wire\\:id]').getAttribute('wire:id');
+                                    if (componentId) {
+                                        Livewire.dispatch('ticket-moved', {
+                                            ticketId: parseInt(ticketId),
+                                            newStatusId: parseInt(statusId)
+                                        });
+                                    }
+                                }
+
+                                this.draggingTicket = null;
+                            });
+
+                            ticket.addEventListener('touchcancel', () => {
+                                clearTimeout(longPressTimer);
+                                if (!isDragging) return;
+
+                                isDragging = false;
+                                ticket.classList.remove('opacity-50', 'relative',
+                                    'z-30');
+                                ticket.style.boxShadow = '';
+                                this.draggingTicket = null;
+
+                                document.querySelectorAll('.status-column').forEach(
+                                    column => {
+                                        column.classList.remove('bg-primary-50',
+                                            'dark:bg-primary-950');
+                                    });
+                            });
+                        }
+
+                        // Details button is always available regardless of permission
                         const detailsButton = ticket.querySelector('button');
                         if (detailsButton) {
                             const ticketId = ticket.getAttribute('data-ticket-id');
@@ -381,7 +408,6 @@
                                     Livewire.dispatch('show-ticket-details', {
                                         ticketId: parseInt(ticketId)
                                     });
-
                                 }
                             });
                         }
@@ -390,10 +416,13 @@
                     const columns = document.querySelectorAll('.status-column');
                     columns.forEach(column => {
                         column.addEventListener('dragover', (e) => {
-                            e.preventDefault();
-                            e.dataTransfer.dropEffect = 'move';
-                            column.classList.add('bg-primary-50',
-                                'dark:bg-primary-950');
+                            // Only allow drop if there's a dragging ticket and user can update it
+                            if (this.draggingTicket) {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = 'move';
+                                column.classList.add('bg-primary-50',
+                                    'dark:bg-primary-950');
+                            }
                         });
 
                         column.addEventListener('dragleave', () => {
@@ -438,7 +467,6 @@
                 document.head.appendChild(viewportMeta);
             }
             viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-
         });
     </script>
 </x-filament-panels::page>
