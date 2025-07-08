@@ -37,7 +37,8 @@ class UserResource extends Resource
                     ->label(__('user.fields.email'))
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn(string $operation): bool => $operation === 'edit'),
 
                 Forms\Components\TextInput::make('password')
                     ->label(__('user.fields.password'))
@@ -93,12 +94,12 @@ class UserResource extends Resource
                     ->label(__('user.fields.created_at'))
                     ->dateTime()
                     ->sortable(),
-                   
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label(__('user.fields.updated_at'))
                     ->dateTime()
                     ->sortable()
-                   
+
             ])
             ->filters([
                 Tables\Filters\Filter::make('has_projects')
