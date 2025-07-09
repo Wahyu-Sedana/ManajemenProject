@@ -37,17 +37,35 @@ class TicketResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
+        $user = auth()->user();
 
-        if (! auth()->user()->hasRole(['super_admin'])) {
-            $query->where(function ($query) {
-                $query->where('user_id', auth()->id())
-                    ->orWhereHas('project.members', function ($query) {
-                        $query->where('users.id', auth()->id());
-                    });
-            });
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
         }
 
-        return $query;
+        if ($user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        if ($user->can('view_any_ticket')) {
+            return $query;
+        }
+
+        if ($user->can('view_ticket')) {
+            return $query->where('user_id', $user->id);
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+
+    public static function canViewAny(): bool
+    {
+        $user = auth()->user();
+
+        return $user && (
+            $user->can('view_any_ticket') || $user->can('view_ticket')
+        );
     }
 
     public static function form(Form $form): Form

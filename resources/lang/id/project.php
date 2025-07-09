@@ -64,4 +64,13 @@ return [
             'remove_selected' => 'Hapus yang Dipilih',
         ],
     ],
+
+    'status' => [
+        'not_started' => 'Belum Dimulai',
+        'in_progress' => 'Sedang Berlangsung',
+        'completed' => 'Selesai',
+        'overdue' => 'Terlambat',
+        'approaching_deadline' => 'Mendekati Tenggat Waktu',
+    ],
+
 ];

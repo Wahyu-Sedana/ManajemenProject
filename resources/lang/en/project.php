@@ -66,5 +66,13 @@ return [
         ],
     ],
 
+    'status' => [
+        'not_started' => 'Not Started',
+        'in_progress' => 'In Progress',
+        'completed' => 'Completed',
+        'overdue' => 'Overdue',
+        'approaching_deadline' => 'Approaching Deadline',
+    ],
+
 
 ];

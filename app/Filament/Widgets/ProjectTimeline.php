@@ -64,54 +64,54 @@ class ProjectTimeline extends Widget
                 ->whereDate('tickets.due_date', '<', $today->toDateString())
                 ->exists();
 
-           $totalTickets = $project->tickets()->count();
+            $totalTickets = $project->tickets()->count();
 
             // Default
-            $status = 'In Progress';
+            $status = __('project.status.in_progress');
             $statusTextColor = 'text-blue-600';
             $progressBarColor = '#2563eb'; // blue
 
             if ($totalTickets === 0) {
-                $status = 'Not Started';
+                $status = __('project.status.not_started');
                 $statusTextColor = 'text-gray-600';
                 $progressBarColor = '#6b7280'; // gray
             } elseif ($hasOverdueTicket && $today->gt($endDate)) {
-                $status = 'Overdue';
+                $status = __('project.status.overdue');
                 $statusTextColor = 'text-red-600';
                 $progressBarColor = '#dc2626'; // red
             } elseif ($today->gt($endDate)) {
-                $status = 'Completed';
+                $status = __('project.status.completed');
                 $statusTextColor = 'text-green-600';
                 $progressBarColor = '#16a34a'; // green
             } elseif ($remainingDays <= 0) {
-                $status = 'Overdue';
+                $status = __('project.status.overdue');
                 $statusTextColor = 'text-red-600';
                 $progressBarColor = '#dc2626'; // red
             } elseif ($remainingDays <= 7) {
-                $status = 'Approaching Deadline';
+                $status = __('project.status.approaching_deadline');
                 $statusTextColor = 'text-yellow-600';
                 $progressBarColor = '#eab308'; // yellow
             }
 
 
             if ($hasOverdueTicket && $today->gt($endDate)) {
-                $status = 'Overdue';
+                $status = __('project.status.overdue');
                 $statusTextColor = 'text-red-600';
                 $progressBarColor = '#dc2626'; // red
             } elseif ($today->gt($endDate)) {
-                $status = 'Completed';
+                $status = __('project.status.completed');
                 $statusTextColor = 'text-green-600';
                 $progressBarColor = '#16a34a'; // green
             } elseif ($remainingDays <= 0) {
-                $status = 'Overdue';
+                $status = __('project.status.overdue');
                 $statusTextColor = 'text-red-600';
                 $progressBarColor = '#dc2626'; // red
             } elseif ($remainingDays <= 7) {
-                $status = 'Approaching Deadline';
+                $status = __('project.status.approaching_deadline');
                 $statusTextColor = 'text-yellow-600';
                 $progressBarColor = '#eab308'; // yellow
             } elseif ($today->lt($startDate)) {
-                $status = 'Not Started';
+                $status = __('project.status.not_started');
                 $statusTextColor = 'text-gray-600';
                 $progressBarColor = '#6b7280'; // gray
             }

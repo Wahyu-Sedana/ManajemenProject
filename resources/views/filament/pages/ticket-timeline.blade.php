@@ -45,7 +45,7 @@
                             <tr>
                                 <th class="px-3 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-r border-gray-200 dark:border-gray-600"
                                     style="width: 50%;">
-                                    {{ __('project.fields.ticket') }}
+                                    {{ __('project.fields.tickets') }}
                                 </th>
                                 @foreach ($this->getMonthHeaders() as $month)
                                     <th class="px-2 py-3 bg-gray-50 dark:bg-gray-700 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-r border-gray-200 dark:border-gray-600"
@@ -96,16 +96,16 @@
 
                                                 <div class="absolute top-0 h-full flex items-center justify-center text-xs font-medium text-white rounded-sm overflow-hidden whitespace-nowrap group cursor-default"
                                                     style="
-                                                        background-color: {{ $backgroundColor }}; 
-                                                        left: {{ $left }}%; 
+                                                        background-color: {{ $backgroundColor }};
+                                                        left: {{ $left }}%;
                                                         width: {{ $width }}%;
                                                         {{ $borderStyle }}
                                                         opacity: {{ $opacity }};">
                                                     <div class="absolute top-0 h-full flex items-center justify-center text-xs font-medium text-white rounded-sm overflow-visible whitespace-nowrap group cursor-pointer"
                                                         title="{{ $task['title'] }} - {{ __('project.due') }}: {{ $task['end_date'] }}"
                                                         style="
-                                                            background-color: {{ $backgroundColor }}; 
-                                                            left: {{ $left }}%; 
+                                                            background-color: {{ $backgroundColor }};
+                                                            left: {{ $left }}%;
                                                             width: {{ $width }}%;
                                                             {{ $borderStyle }}
                                                             opacity: {{ $opacity }};">

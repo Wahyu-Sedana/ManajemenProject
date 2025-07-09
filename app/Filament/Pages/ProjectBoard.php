@@ -104,14 +104,20 @@ class ProjectBoard extends Page
     {
         if (! $this->selectedProject) {
             $this->ticketStatuses = collect();
-
             return;
         }
 
+        $user = auth()->user();
+
         $this->ticketStatuses = $this->selectedProject->ticketStatuses()
-            ->with(['tickets' => function ($query) {
-                $query->with(['assignee', 'status'])
-                    ->orderBy('created_at', 'desc');
+            ->with(['tickets' => function ($query) use ($user) {
+                $query->with(['assignee', 'status']);
+
+                if (!$user->can('viewAny', \App\Models\Ticket::class)) {
+                    $query->where('user_id', $user->id);
+                }
+
+                $query->orderBy('created_at', 'desc');
             }])
             ->orderBy('sort_order')
             ->get();
@@ -205,7 +211,8 @@ class ProjectBoard extends Page
                 ->color('warning'),
 
             ExportTicketsAction::make()
-                ->visible(fn() => $this->selectedProject !== null),
+                ->visible(fn() => $this->selectedProject !== null && auth()->user()->hasAnyRole(['super_admin', 'hrd', 'supervisor'])),
+
         ];
     }
 
